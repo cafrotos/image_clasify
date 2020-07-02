@@ -5,11 +5,10 @@ from keras.applications.vgg16 import VGG16, preprocess_input, decode_predictions
 from keras.preprocessing import image
 import numpy as np
 
-from PIL import Image, ImageFile
+from PIL import Image
 import requests
 from io import BytesIO
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 app = Flask(__name__)
 model = None
@@ -22,13 +21,11 @@ def load_model():
 def upload_file():
     response = {'success': False}
     img_url = request.args.getlist('url')
-    response['list'] = []
+    response['predictions'] = []
     for url in img_url:
-        responsePredict = {'url': url}
+        responsePredict = {''}
         result = requests.get(url)
         img = Image.open(BytesIO(result.content))
-        
-        # img = Image.open(result.content)
         if img.mode != 'RGB':
             img = img.convert('RGB')
         img = img.resize((224, 224))
@@ -38,9 +35,12 @@ def upload_file():
 
         preds = model.predict(inputs)
         results = decode_predictions(preds)
-        responsePredict['predictions'] = {'label': results[0][0][1], 'probability': float(results[0][0][2])} 
-        response['list'].append(responsePredict)
-    response['success'] = True
+
+        responsePredict['predictions'] = []
+        for (imagenetID, label, prob) in results[0]: # [0] as input is only one image
+            row = {'label': label, 'probability': float(prob)} # numpy float is not good for json
+            responsePredict['predictions'].append(row)
+        response['success'] = True
     return jsonify(response)
 
 if __name__ == '__main__':

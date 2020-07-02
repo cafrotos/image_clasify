@@ -5,7 +5,7 @@ from keras.applications.vgg16 import VGG16, preprocess_input, decode_predictions
 from keras.preprocessing import image
 import numpy as np
 
-from PIL import Image, ImageFile
+from PIL import Image, Ima
 import requests
 from io import BytesIO
 
@@ -27,8 +27,6 @@ def upload_file():
         responsePredict = {'url': url}
         result = requests.get(url)
         img = Image.open(BytesIO(result.content))
-        
-        # img = Image.open(result.content)
         if img.mode != 'RGB':
             img = img.convert('RGB')
         img = img.resize((224, 224))

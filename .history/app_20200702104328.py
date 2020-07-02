@@ -27,7 +27,6 @@ def upload_file():
         responsePredict = {'url': url}
         result = requests.get(url)
         img = Image.open(BytesIO(result.content))
-        
         # img = Image.open(result.content)
         if img.mode != 'RGB':
             img = img.convert('RGB')

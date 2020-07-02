@@ -5,11 +5,10 @@ from keras.applications.vgg16 import VGG16, preprocess_input, decode_predictions
 from keras.preprocessing import image
 import numpy as np
 
-from PIL import Image, ImageFile
+from PIL import Image
 import requests
 from io import BytesIO
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 app = Flask(__name__)
 model = None
@@ -24,11 +23,10 @@ def upload_file():
     img_url = request.args.getlist('url')
     response['list'] = []
     for url in img_url:
+        print(url)
         responsePredict = {'url': url}
         result = requests.get(url)
         img = Image.open(BytesIO(result.content))
-        
-        # img = Image.open(result.content)
         if img.mode != 'RGB':
             img = img.convert('RGB')
         img = img.resize((224, 224))
@@ -38,7 +36,8 @@ def upload_file():
 
         preds = model.predict(inputs)
         results = decode_predictions(preds)
-        responsePredict['predictions'] = {'label': results[0][0][1], 'probability': float(results[0][0][2])} 
+        
+        responsePredict['predictions'] = {'label': results[0][0].label, 'probability': float(results[0][0].prob)} 
         response['list'].append(responsePredict)
     response['success'] = True
     return jsonify(response)
